@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Advanced Report Builder</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    /* Reset & Base */
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Roboto', sans-serif; background: #f1f3f6; color: #333; line-height: 1.6; }
+    a { text-decoration: none; color: inherit; }
+    
+    /* Container */
+    .container {
+      max-width: 980px;
+      margin: 20px auto;
+      background: #fff;
+      border-radius: 8px;
+      padding: 20px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    
+    /* Header */
+    header {
+      position: sticky;
+      top: 0;
+      background: #007BFF;
+      color: #fff;
+      padding: 15px;
+      border-radius: 8px 8px 0 0;
+      text-align: center;
+      z-index: 1000;
+      margin: -20px -20px 20px -20px;
+    }
+    header h1 { font-weight: 700; font-size: 1.8em; }
+    
+    /* Section Titles */
+    h2 { margin-bottom: 10px; color: #007BFF; text-align: center; }
+    
+    /* Sections */
+    .section { margin-bottom: 25px; }
+    .section .form-group { margin-bottom: 12px; }
+    .section label { display: block; margin-bottom: 4px; font-weight: 500; }
+    .section input[type="text"],
+    .section textarea,
+    .section select {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      font-size: 1em;
+    }
+    
+    /* Buttons */
+    button {
+      background: #007BFF;
+      border: none;
+      padding: 10px 15px;
+      color: #fff;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 1em;
+      transition: background 0.3s ease;
+    }
+    button:hover { background: #0056b3; }
+    button:disabled { background: #aaa; cursor: not-allowed; }
+    
+    /* Notification */
+    .notification {
+      margin-top: 10px;
+      padding: 10px;
+      background: #e0f7fa;
+      border: 1px solid #81d4fa;
+      border-radius: 4px;
+      color: #006064;
+    }
+    
+    /* Preview Styles */
+    .preview {
+      background: #f9f9f9;
+      border: 1px solid #ddd;
+      padding: 15px;
+      border-radius: 4px;
+      margin-top: 10px;
+    }
+    .preview h1 { font-size: 1.8em; margin-bottom: 10px; }
+    .preview h2 { font-size: 1.6em; margin-bottom: 8px; }
+    .preview h3 { font-size: 1.4em; margin-bottom: 6px; }
+    .preview p  { margin-bottom: 8px; }
+    .preview small { font-size: 0.85em; color: #555; }
+    .preview .line { border-top: 1px solid #ccc; margin: 10px 0; }
+    .preview .dottedline { border-top: 1px dotted #ccc; margin: 10px 0; }
+    .preview .signature {
+      border: 2px dashed #aaa;
+      padding: 10px;
+      text-align: center;
+      font-style: italic;
+      color: #888;
+      margin: 10px 0;
+    }
+    .preview img { max-width: 100%; margin: 10px 0; }
+    
+    /* JSON Output */
+    .output {
+      background: #eef2f7;
+      border: 1px solid #ccc;
+      padding: 15px;
+      font-family: monospace;
+      white-space: pre-wrap;
+      margin-top: 15px;
+      border-radius: 4px;
+      max-height: 250px;
+      overflow-y: auto;
+    }
+    
+    /* Table for Element List */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 8px;
+      font-size: 0.9em;
+    }
+    th { background: #f2f2f2; }
+    .action-buttons button { margin: 2px 2px; padding: 4px 8px; font-size: 0.8em; }
+    
+    /* Responsive */
+    @media (max-width: 600px) {
+      .container { padding: 15px; }
+      button { width: 100%; margin-bottom: 5px; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Advanced Report Builder</h1>
+  </header>
+  
+  <div class="container">
+    <!-- Load or Example Section -->
+    <section class="section">
+      <button id="loadExample">Load Example Report</button>
+      <div class="form-group">
+        <label for="loadFile">Or Load Your Report File:</label>
+        <input type="file" id="loadFile" accept=".json">
+      </div>
+      <div id="notification" class="notification" style="display: none;"></div>
+    </section>
+    
+    <!-- Page Controls -->
+    <section class="section">
+      <h2>Pages</h2>
+      <div class="form-group">
+        <button id="addPage">Add New Page</button>
+      </div>
+      <div class="form-group">
+        <label for="pageSelect">Select Page to Edit:</label>
+        <select id="pageSelect">
+          <!-- Options will be added dynamically -->
+        </select>
+      </div>
+    </section>
+    
+    <!-- Element Input Controls -->
+    <section class="section">
+      <h2>Add / Edit an Element</h2>
+      <div class="form-group">
+        <label for="elementType">Element Type:</label>
+        <select id="elementType">
+          <option value="header">Header</option>
+          <option value="header2">Header 2</option>
+          <option value="header3">Header 3</option>
+          <option value="paragraph">Paragraph</option>
+          <option value="smalltext">Small Text</option>
+          <option value="line">Line</option>
+          <option value="dottedline">Dotted Line</option>
+          <option value="image">Image</option>
+          <option value="signature">Signature</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="elementContent">Content:</label>
+        <textarea id="elementContent" rows="3" placeholder="Enter text here"></textarea>
+      </div>
+      <div class="form-group" id="imageURLGroup" style="display: none;">
+        <label for="imageURL">Image URL:</label>
+        <input type="text" id="imageURL" placeholder="https://example.com/image.png">
+      </div>
+      <button id="saveElement">Add Element</button>
+      <button id="cancelEdit" style="display:none;">Cancel Edit</button>
+    </section>
+    
+    <!-- Elements List with Order Editing -->
+    <section class="section">
+      <h2>Elements List (Current Page)</h2>
+      <div id="elementList">
+        <!-- Dynamically generated table of elements -->
+      </div>
+    </section>
+    
+    <!-- Live Preview -->
+    <section class="section">
+      <h2>Page Preview</h2>
+      <div id="pagePreview" class="preview">
+        <!-- Rendered page will appear here -->
+      </div>
+    </section>
+    
+    <!-- JSON Output Controls -->
+    <section class="section">
+      <h2>Output Report JSON</h2>
+      <button id="showJSON">Show JSON</button>
+      <button id="downloadJSON">Download JSON</button>
+      <div id="jsonOutput" class="output"></div>
+    </section>
+  </div>
+  
+  <script>
+    // Our report object that will be built.
+    let report = {
+      draftId: Date.now(),
+      fields: { title: "My Report" },
+      type: "default",
+      pages: []
+    };
+    
+    // Track if we're editing an existing element.
+    let editingElementIndex = null; // null means add mode
+    
+    // Get DOM elements.
+    const pageSelect = document.getElementById('pageSelect');
+    const elementType = document.getElementById('elementType');
+    const elementContent = document.getElementById('elementContent');
+    const imageURLGroup = document.getElementById('imageURLGroup');
+    const imageURL = document.getElementById('imageURL');
+    const saveElementBtn = document.getElementById('saveElement');
+    const cancelEditBtn = document.getElementById('cancelEdit');
+    const elementList = document.getElementById('elementList');
+    const pagePreview = document.getElementById('pagePreview');
+    const jsonOutput = document.getElementById('jsonOutput');
+    const notification = document.getElementById('notification');
+    
+    // Utility: show a temporary notification.
+    function showNotification(msg) {
+      notification.textContent = msg;
+      notification.style.display = 'block';
+      setTimeout(() => notification.style.display = 'none', 2500);
+    }
+    
+    // Toggle image URL field when type is image.
+    elementType.addEventListener('change', function() {
+      imageURLGroup.style.display = (elementType.value === 'image') ? 'block' : 'none';
+    });
+    
+    // Refresh page selection options.
+    function updatePageOptions() {
+      pageSelect.innerHTML = "";
+      report.pages.forEach((page, index) => {
+        const opt = document.createElement('option');
+        opt.value = index;
+        opt.textContent = "Page " + (index + 1);
+        pageSelect.appendChild(opt);
+      });
+      updateElementList();
+      updatePreview();
+    }
+    
+    // Render the live preview for the selected page.
+    function updatePreview() {
+      const pageIndex = parseInt(pageSelect.value);
+      if (isNaN(pageIndex) || !report.pages[pageIndex]) {
+        pagePreview.innerHTML = "<p>No page selected.</p>";
+        return;
+      }
+      const page = report.pages[pageIndex];
+      pagePreview.innerHTML = "";
+      page.elements.forEach(el => {
+        let elNode;
+        switch (el.type) {
+          case "header":
+            elNode = document.createElement("h1");
+            elNode.textContent = el.content;
+            break;
+          case "header2":
+            elNode = document.createElement("h2");
+            elNode.textContent = el.content;
+            break;
+          case "header3":
+            elNode = document.createElement("h3");
+            elNode.textContent = el.content;
+            break;
+          case "paragraph":
+            elNode = document.createElement("p");
+            elNode.textContent = el.content;
+            break;
+          case "smalltext":
+            elNode = document.createElement("small");
+            elNode.textContent = el.content;
+            break;
+          case "line":
+            elNode = document.createElement("div");
+            elNode.className = "line";
+            break;
+          case "dottedline":
+            elNode = document.createElement("div");
+            elNode.className = "dottedline";
+            break;
+          case "image":
+            elNode = document.createElement("img");
+            elNode.src = (el.args && el.args.url) ? el.args.url : "https://via.placeholder.com/150";
+            break;
+          case "signature":
+            elNode = document.createElement("div");
+            elNode.className = "signature";
+            elNode.textContent = el.content || "Signature Box";
+            break;
+          default:
+            elNode = document.createElement("p");
+            elNode.textContent = el.content;
+        }
+        pagePreview.appendChild(elNode);
+      });
+    }
+    
+    // Render the element list with controls.
+    function updateElementList() {
+      const pageIndex = parseInt(pageSelect.value);
+      if (isNaN(pageIndex) || !report.pages[pageIndex]) {
+        elementList.innerHTML = "<p>No page selected.</p>";
+        return;
+      }
+      const page = report.pages[pageIndex];
+      let html = "<table><thead><tr><th>#</th><th>Type</th><th>Content</th><th>Actions</th></tr></thead><tbody>";
+      page.elements.forEach((el, idx) => {
+        html += `<tr>
+          <td>${idx + 1}</td>
+          <td>${el.type}</td>
+          <td>${(el.content ? el.content.substring(0, 40) : "")}</td>
+          <td class="action-buttons">
+            <button onclick="editElement(${idx})">Edit</button>
+            <button onclick="deleteElement(${idx})">Delete</button>
+            <button onclick="moveUp(${idx})">Up</button>
+            <button onclick="moveDown(${idx})">Down</button>
+          </td>
+        </tr>`;
+      });
+      html += "</tbody></table>";
+      elementList.innerHTML = html;
+    }
+    
+    // Edit element: populate fields for the given index.
+    function editElement(idx) {
+      const pageIndex = parseInt(pageSelect.value);
+      const el = report.pages[pageIndex].elements[idx];
+      elementType.value = el.type;
+      elementContent.value = el.content;
+      if (el.type === "image" && el.args && el.args.url) {
+        imageURL.value = el.args.url;
+        imageURLGroup.style.display = 'block';
+      } else {
+        imageURL.value = "";
+        imageURLGroup.style.display = 'none';
+      }
+      editingElementIndex = idx;
+      saveElementBtn.textContent = "Save Element";
+      cancelEditBtn.style.display = "inline-block";
+      showNotification("Editing element #" + (idx + 1));
+    }
+    
+    // Delete element.
+    function deleteElement(idx) {
+      const pageIndex = parseInt(pageSelect.value);
+      if (confirm("Delete element #" + (idx + 1) + "?")) {
+        report.pages[pageIndex].elements.splice(idx, 1);
+        updateElementList();
+        updatePreview();
+        showNotification("Element deleted.");
+      }
+    }
+    
+    // Move element up.
+    function moveUp(idx) {
+      const pageIndex = parseInt(pageSelect.value);
+      if (idx <= 0) return;
+      const elems = report.pages[pageIndex].elements;
+      [elems[idx - 1], elems[idx]] = [elems[idx], elems[idx - 1]];
+      updateElementList();
+      updatePreview();
+    }
+    
+    // Move element down.
+    function moveDown(idx) {
+      const pageIndex = parseInt(pageSelect.value);
+      const elems = report.pages[pageIndex].elements;
+      if (idx >= elems.length - 1) return;
+      [elems[idx], elems[idx + 1]] = [elems[idx + 1], elems[idx]];
+      updateElementList();
+      updatePreview();
+    }
+    
+    // Save or add an element.
+    saveElementBtn.addEventListener('click', function() {
+      const pageIndex = parseInt(pageSelect.value);
+      if (isNaN(pageIndex) || !report.pages[pageIndex]) {
+        alert("Please add a page first.");
+        return;
+      }
+      let newElement = {
+        type: elementType.value,
+        content: elementContent.value || "New Content"
+      };
+      if (elementType.value === 'image') {
+        newElement.args = { url: imageURL.value || "https://via.placeholder.com/150" };
+        newElement.params = { align: 0.5, scale: 1.0 };
+      }
+      if (editingElementIndex !== null) {
+        report.pages[pageIndex].elements[editingElementIndex] = newElement;
+        editingElementIndex = null;
+        saveElementBtn.textContent = "Add Element";
+        cancelEditBtn.style.display = "none";
+        showNotification("Element updated.");
+      } else {
+        report.pages[pageIndex].elements.push(newElement);
+        showNotification("Element added.");
+      }
+      elementContent.value = "";
+      imageURL.value = "";
+      updateElementList();
+      updatePreview();
+    });
+    
+    // Cancel edit mode.
+    cancelEditBtn.addEventListener('click', function() {
+      editingElementIndex = null;
+      saveElementBtn.textContent = "Add Element";
+      cancelEditBtn.style.display = "none";
+      elementContent.value = "";
+      imageURL.value = "";
+    });
+    
+    // Update element list and preview when page selection changes.
+    pageSelect.addEventListener('change', function() {
+      updateElementList();
+      updatePreview();
+    });
+    
+    // Add new page.
+    document.getElementById('addPage').addEventListener('click', function() {
+      report.pages.push({ elements: [] });
+      updatePageOptions();
+      pageSelect.value = report.pages.length - 1;
+      showNotification("New page added.");
+    });
+    
+    // Show JSON output.
+    document.getElementById('showJSON').addEventListener('click', function() {
+      jsonOutput.textContent = JSON.stringify(report, null, 2);
+    });
+    
+    // Download JSON as a file.
+    document.getElementById('downloadJSON').addEventListener('click', function() {
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(report, null, 2));
+      const a = document.createElement('a');
+      a.setAttribute('href', dataStr);
+      a.setAttribute('download', 'report.json');
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+    });
+    
+    // Load example report.
+    document.getElementById('loadExample').addEventListener('click', function() {
+      const example = {
+        "draftId":99750836.0,
+        "fields":{"title":"Research stuff"},
+        "type":"default",
+        "pages":[
+          {"elements":[
+            {"type":"header","content":"Personal stuff for the"},
+            {"type":"header","content":"  research of SCP-999"},
+            {"type":"line","content":"New Line"},
+            {"type":"image","content":"New Image","params":{"align":0.5,"scale":0.75},"args":{"url":"https://i.imgur.com/MxSJnwY.png"}},
+            {"type":"line","content":"New Line"},
+            {"type":"paragraph","content":"This document should never be printed; \nif it is, that is a mistake and should \nbe broken as soon as possible."}
+          ]},
+          {"elements":[
+            {"type":"smalltext","content":"Psychological evaluation was a big part of this document \nthat could not go otherwisely without. The psychological \nevaluation was done throughout this by many doctors, which \nwill be included, more in Index on p.2."},
+            {"type":"dottedline","content":"New Dotted Line"},
+            {"type":"smalltext","content":"I have personally spoken to one of those doctors, and he \ngave me a guide on how to do a psychological evaluation, \nwhich will also be included in this research study as base \nquestions and then the answers so I may do the \npsychological evaluation without the senior doctor \npresent and then ask him to analyze it for me when I have \nmore stacked up."},
+            {"type":"dottedline","content":"New Dotted Line"},
+            {"type":"paragraph","content":"Method"},
+            {"type":"smalltext","content":"------------------------------------------------------------"},
+            {"type":"smalltext","content":"The researcher (the author of this document) will get into \nthe dblock, where a DClass will be requested from the \ngeneral security department (GSD). The better amount of \npersonnel requested going to a test will be one Class D (1) \nand another one combative like GSD (1). The subject that \nwill be in the area of testing with anomaly SCP-999 will \ngo under psychological evaluation. Psychological \nevaluation will help us be sure that Class D subject can be \nunhandcuffed and generally get more information on the \nbehavior and effects of anomaly SCP-999 around Class D \nsubject."},
+            {"type":"dottedline","content":"New Dotted Line"},
+            {"type":"paragraph","content":"Aim"},
+            {"type":"smalltext","content":"------------------------------------------------------------"},
+            {"type":"smalltext","content":"The aim is related to the direction that this test will be \ntrying to take. All studies related to SCP-999 from Robert \n'Potent' Novotny will be taken safely as much as possible, \nfor example, by doing psychological evaluations. The \nsecond part of the aim is the informational aim, which \ncurrently will be on the behavior of SCP-999 in the area of \nClass D subjects. If SCP-999 tries to help him or not want \nto be near him, everything will be documented and results \nwill be conducted."},
+            {"type":"line","content":"New Line"}
+          ]},
+          {"elements":[
+            {"type":"header","content":"Test idea"},
+            {"type":"line","content":"New Line"},
+            {"type":"smalltext","content":"This test idea is related to trees in entrance zone, if it \nwould be accepted. It is possible that SCP-999 would act \ndifferently around a tree then usually which would bring \nmany new information to our research."},
+            {"type":"dottedline","content":"New Dotted Line"},
+            {"type":"smalltext","content":"If SCP-999 does not appreciate as much the nature then we \ncan block off the access to it and we would know for sure \nthat it should not be tested upon, but if instead SCP-999 \nwould like nature as whole a tree or plant can be installed \nin it's containment."},
+            {"type":"line","content":"New Line"}
+          ]}
+        ],
+        "date":1739373936.0
+      };
+      report = example;
+      updatePageOptions();
+      showNotification("Example report loaded.");
+    });
+    
+    // Load an existing file.
+    document.getElementById('loadFile').addEventListener('change', function(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(evt) {
+        try {
+          report = JSON.parse(evt.target.result);
+          updatePageOptions();
+          showNotification("Report loaded successfully.");
+        } catch (err) {
+          alert("Error parsing JSON file: " + err);
+        }
+      };
+      reader.readAsText(file);
+    });
+    
+    // Initialize with one empty page if none exist.
+    (function init() {
+      if (!report.pages.length) {
+        report.pages.push({ elements: [] });
+      }
+      updatePageOptions();
+    })();
+    
+    // Expose functions for inline onclick handlers.
+    window.editElement = editElement;
+    window.deleteElement = deleteElement;
+    window.moveUp = moveUp;
+    window.moveDown = moveDown;
+  </script>
+</body>
+</html>
